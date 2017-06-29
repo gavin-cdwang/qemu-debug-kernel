@@ -1,5 +1,9 @@
 #!/bin/bash
 
+
+CROSS_COMPILE_PATH = /opt/toolchains/arm-2014.05/
+
+
 sudo rm -rf rootfs
 sudo rm -rf tmpfs
 sudo rm -rf ramdisk*
@@ -16,10 +20,10 @@ sudo mkdir -p rootfs/mnt/
 
 sudo cp rootfs_bk/etc rootfs/ -arf
 
-sudo cp -arf /opt/toolchains/arm-2014.05/arm-none-linux-gnueabi/libc/lib rootfs/
+sudo cp -arf $CROSS_COMPILE_PATH/arm-none-linux-gnueabi/libc/lib rootfs/
 
 sudo rm -rf rootfs/lib/*.a
-sudo /opt/toolchains/arm-2014.05/bin/arm-none-linux-gnueabi-strip rootfs/lib/*
+sudo $CROSS_COMPILE_PATH/bin/arm-none-linux-gnueabi-strip rootfs/lib/*
 
 sudo mkdir -p rootfs/dev/
 sudo mknod rootfs/dev/tty1 c 4 1
