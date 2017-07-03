@@ -1,0 +1,56 @@
+#! /bin/sh
+# Script to bring a network (tap) device for qemu up.
+# The idea is to add the tap device to the same bridge
+# as we have default routing to.
+
+# in order to be able to find brctl
+
+#!/bin/sh 
+# 
+# script to bring up the tun device in QEMU in bridged mode 
+# first parameter is name of tap device (e.g. tap0)
+#
+# some constants specific to the local host - change to suit your host
+#
+
+#说明：
+#1.下面相关的IP地址改为你主机对应到的IP地址段;
+#2.enp0s3是宿主机的真实网络接口，需要改为你对应的接口一般是eth0;
+#3.静态配置的IP，虚拟网卡接口，qemu arm板子都需要配置到同一网络段，网关等地址一定要配正确;
+#
+ETH0IPADDR=192.168.199.100
+MASK=255.255.255.0
+GATEWAY=192.168.199.1
+BROADCAST=192.168.199.255
+
+#create the tap0 interface
+#sudo tunctl -u $(id -un) -t $1
+
+sudo tunctl -u $USER -t $1
+
+sudo ifconfig enp0s3 0.0.0.0 promisc up
+
+sudo ifconfig $1 0.0.0.0 promisc up
+#
+# create the bridge between eth0 and the tap device
+#
+sudo brctl addbr br0
+sudo brctl addif br0 enp0s3
+sudo brctl addif br0 $1
+
+sudo brctl stp br0 off 
+
+#use dhcp
+#sudo dhclient br0 
+#sudo iptables -F FORWARD
+
+#use static config ip
+sudo ifconfig br0 $ETH0IPADDR netmask $MASK broadcast $BROADCAST
+sudo route add default gw $GATEWAY
+
+sudo ifconfig br0 192.168.199.100 up
+sudo ifconfig enp0s3 192.168.199.136 up
+sudo ifconfig $1 192.168.199.120 up
+
+
+
